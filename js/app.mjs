@@ -1,5 +1,7 @@
 import {Game,DEFAULTS} from './game.mjs';
-import {handTotal,trueCount,hiLo,makeShoe,RANKS} from './engine.mjs';
+import {handTotal,trueCount,hiLo,makeShoe,RANKS,decide} from './engine.mjs';
+import {UPCARDS} from '../data/charts.mjs';
+import {SECTIONS,rowsOf,cellInfo,answer,devCells,countFor,surAllowed,isIndex,ctxFor} from './learn.mjs';
 const $=s=>document.querySelector(s);
 const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
 let S=Object.assign({},DEFAULTS,LS.get('bj.settings',{}));
@@ -45,6 +47,7 @@ function route(){const h=location.hash.slice(1)||'home';document.querySelectorAl
  else if(h==='settings'){renderSettings();$('#settings').classList.add('on');}
  else if(h==='drills'){renderDrills();$('#drills').classList.add('on');}
  else if(h==='stats'){renderStats();$('#stats').classList.add('on');}
+ else if(h==='learn'){renderLearn();$('#learn').classList.add('on');}
  else $('#home').classList.add('on');window.scrollTo(0,0);}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){location.hash=b.dataset.go;}});
 addEventListener('hashchange',route);
@@ -150,5 +153,59 @@ function renderStats(){const p=(a,b)=>b?Math.round(100*a/b)+'%':'—';const m=Ob
  <div class="box"><div class="v">${p(ST.iok,ST.in)}</div><div class="l">ביטוח (${ST.in})</div></div>
  <div class="box" style="grid-column:span 2"><div class="v">${p(ST.qok,ST.qn)}</div><div class="l">בחני ספירה ותרגילים (${ST.qn})</div></div></div>
  <div class="panel"><h4>טעויות נפוצות</h4>${m.length?m.map(([k,v])=>`<div class="mist"><span>${k}</span><b>${v}</b></div>`).join(''):'<p class="note">אין עדיין טעויות.</p>'}</div>`;}
-$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'){closeSheet();deal();}});
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet'){closeSheet();if(location.hash.startsWith('#practice'))deal();}});
+// ---------- learn ----------
+const RULES=()=>({h17:S.h17,das:S.das,surrender:S.surrender,surrenderA:S.surrenderA});
+const SEC_HE={pairs:'זוגות',soft:'ידיים רכות',hard:'ידיים קשות',surrender:'כניעה',dev:'סטיות',fc:'כרטיסיות'};
+const CODE_HE={H:'קלף',S:'עמוד',D:'הכפל (אם אסור: קלף)',Ds:'הכפל (אם אסור: עמוד)',Y:'פצל','Y/N':'פצל אם יש DAS, אחרת לא',N:'לא לפצל',SUR:'כניעה','':'לא נכנעים (ממשיכים לטבלה הרגילה)'};
+const condHE=ix=>{const m=/^(-?\d+)([+-])$/.exec(ix),n=+m[1];if(n===0)return m[2]==='+'?'כשהספירה הרצה חיובית (RC > 0)':'כשהספירה הרצה שלילית (RC < 0)';return m[2]==='+'?`כש-TC ≥ ${n}`:`כש-TC ≤ ${n}`;};
+const rowHE=(sec,row)=>sec==='pairs'?row.replace('T','10'):sec==='soft'?row:row;
+let LT='pairs',FCSEC='all',FCMODE='basic',FCQ=null,FCFB=null;
+const SRS={get:()=>LS.get('bj.srs',{}),bump(k,ok){const d=this.get();const w=d[k]??1;d[k]=ok?Math.max(1,w-1):Math.min(9,w+3);LS.set('bj.srs',d);}};
+function learnCellHTML(R,sec,row,up){const ci=cellInfo(R,sec,row,up);let cls=ci.base==='Y/N'?'YN':ci.base;const off=sec==='surrender'&&!surAllowed(R,up);
+ let txt=ci.base;if(sec==='pairs'&&ci.base==='Y/N')cls=R.das?'Y':'N';if(sec==='surrender'&&off)cls='';
+ return`<div class="c-${cls}${ci.index?' dot':''}${off?' off':''}" data-cell="${sec}|${row}|${up}">${txt}</div>`;}
+function renderLearn(){const R=RULES();
+ const tabs=`<div class="tabs">${['pairs','soft','hard','surrender','dev','fc'].map(t=>`<button data-lt="${t}" class="${LT===t?'on':''}">${SEC_HE[t]}</button>`).join('')}</div>`;
+ const rules=`<p class="note">טבלת ${R.h17?'H17':'S17'} של Blackjack Apprenticeship · DAS ${R.das?'מותר':'אסור'} · כניעה ${R.surrender?(R.surrenderA?'מותרת (גם מול אס)':'מותרת (לא מול אס)'):'אסורה'} · משנים בהגדרות</p>`;
+ let body='';
+ if(SECTIONS.includes(LT)){if(LT==='surrender'&&!R.surrender)body=`<p class="note">כניעה כבויה בהגדרות.</p>`;
+  body+=`<div class="grid"><div class="hd"></div>${UPCARDS.map(u=>`<div class="hd">${u}</div>`).join('')}${rowsOf(R,LT).map(row=>`<div class="rh">${rowHE(LT,row)}</div>${UPCARDS.map(u=>learnCellHTML(R,LT,row,u)).join('')}`).join('')}</div>
+  <div class="legend">${(LT==='pairs'?[['Y','פיצול'],['N','לא לפצל'],['YN','Y/N לפי DAS']]:LT==='surrender'?[['SUR','כניעה']]:[['H','קלף'],['S','עמידה'],['D','הכפלה'],['Ds','הכפלה, אחרת עמידה']]).map(([c,l])=>`<span><i class="c-${c}"></i>${l}</span>`).join('')}<span><i style="background:#d0142c;border-radius:50%;width:8px;height:8px;vertical-align:1px"></i>יש סטייה לפי ספירה</span></div>
+  <p class="note">הקש על תא להסבר. התא מציג את המשחק הבסיסי (בלי ספירה).</p>`;}
+ else if(LT==='dev'){body=`<div class="devl">${devCells(R).map(c=>`<div class="devi" data-cell="${c.sec}|${c.row}|${c.up}"><div class="ix">${c.index}</div><div><div class="tt">${c.sec==='surrender'?'כניעה ':''}${rowHE(c.sec,c.row)} מול ${c.up}</div><div class="ss">${CODE_HE[c.dev]} ${condHE(c.index)}; אחרת ${CODE_HE[c.base]}</div></div></div>`).join('')}
+  <div class="devi"><div class="ix">3+</div><div><div class="tt">ביטוח / כסף שווה</div><div class="ss">לוקחים כש-TC ≥ 3; אחרת לא לוקחים</div></div></div></div><p class="note">"n+" = TC ≥ n, "n-" = TC ≤ n, "0+"/"0-" = ספירה רצה חיובית/שלילית (לפי מקרא הטבלה).</p>`;}
+ else body=fcHTML();
+ $('#learn').innerHTML=bar('לימוד הטבלאות')+tabs+rules+body+`<div style="padding:8px 12px 30px"><button class="ab gold" data-go="practice-count" style="width:100%">${I.deal}לתרגול בשולחן</button></div>`;}
+function explain(sec,row,up){const R=RULES(),ci=cellInfo(R,sec,row,up),off=sec==='surrender'&&!surAllowed(R,up);
+ let h=`<h3>${sec==='surrender'?'כניעה · ':''}${rowHE(sec,row)} מול ${up}</h3><div class="row"><div class="k">בטבלה מודפס</div><b dir="ltr">${ci.printed||'(ריק)'}</b></div>`;
+ if(ci.index)h+=`<div class="row"><div class="k">בסיסי</div><b>${CODE_HE[ci.base]}</b></div><div class="row"><div class="k">סטייה ${condHE(ci.index)}</div><b>${CODE_HE[ci.dev]}</b></div>`;
+ else h+=`<div class="row"><div class="k">פעולה</div><b>${CODE_HE[ci.base]}</b></div>`;
+ if(sec==='pairs'&&ci.base==='Y/N')h+=`<p class="note">לפי ההגדרות (DAS ${R.das?'מותר':'אסור'}): ${R.das?'מפצלים':'לא מפצלים, משחקים לפי סכום היד'}.</p>`;
+ if(off)h+=`<p class="note">כניעה ${R.surrender?'מול אס כבויה':'כבויה'} בהגדרות; משחקים לפי טבלת הידיים הקשות.</p>`;
+ if(sec==='pairs')h+=`<p class="note">פיצול שהטבלה מורה עליו קודם לכניעה.</p>`;
+ sheet(h+`<button class="ab" style="width:100%;margin-top:12px" id="xclose">סגור</button>`);}
+function pickFC(){const R=RULES(),srs=SRS.get(),pool=[];
+ if(FCMODE==='dev'){for(const c of devCells(R))pool.push({sec:c.sec,row:c.row,up:c.up,dev:c});}
+ else for(const sec of (FCSEC==='all'?SECTIONS:[FCSEC]))if(sec!=='surrender'||R.surrender)for(const row of rowsOf(R,sec))for(const up of UPCARDS){if(sec==='surrender'&&!surAllowed(R,up))continue;if(sec==='surrender'&&!cellInfo(R,sec,row,up).printed)continue;pool.push({sec,row,up});}
+ if(FCMODE!=='dev'&&FCSEC!=='all')pool.splice(0,pool.length,...pool.filter(p=>p.sec===FCSEC));
+ const key=p=>`${FCMODE}:${p.sec} ${p.row} ${p.up}`;const W=pool.map(p=>srs[key(p)]??1);let x=Math.random()*W.reduce((a,b)=>a+b,0),i=0;for(;i<pool.length-1&&(x-=W[i])>0;i++);
+ const q=pool[i];q.key=key(q);if(q.dev){Object.assign(q,countFor(q.dev.index,Math.random()<.5));}else{q.rc=0;q.tc=0;}
+ const ctx=ctxFor(R,q.sec,q.row,q.up,{counting:FCMODE==='dev',rc:q.rc,tc:q.tc});q.ctx=ctx;q.exp=decide(ctx);
+ q.cards=ctx.cards.map((c,k)=>({r:c.r==='10'?['10','J','Q','K'][Math.floor(Math.random()*4)]:c.r,s:Math.floor(Math.random()*4),up:true}));if(q.sec==='pairs'&&val10(q.cards[0].r))q.cards[1].r=q.cards[0].r==='10'?'K':q.cards[1].r;
+ q.dealer={r:q.up==='10'?['10','J','Q','K'][Math.floor(Math.random()*4)]:q.up,s:Math.floor(Math.random()*4),up:true};FCQ=q;FCFB=null;}
+const val10=r=>['10','J','Q','K'].includes(r);
+function fcHTML(){if(!FCQ)pickFC();const q=FCQ,R=RULES();const al={H:true,S:true,D:true,P:q.ctx.canSplit,R:q.ctx.canSurrender};
+ const wrong=Object.values(SRS.get()).filter(w=>w>1).length;
+ const fb=FCFB?`<div class="fb ${FCFB.ok?'ok':'bad'}" style="position:static;margin:12px"><div class="hd">${FCFB.ok?I.ok:I.bad}${FCFB.ok?'נכון':'לא נכון'} · הנכון: ${A_HE[q.exp.action]}</div><div>${q.exp.src==='deviation'?`<span class="tag">סטייה</span>${q.exp.cellKey}, אינדקס <b dir="ltr">${q.exp.index}</b>`:q.exp.index?`<span class="tag">בסיסי</span>אינדקס <b dir="ltr">${q.exp.index}</b> לא הופעל`:`<span class="tag">בסיסי</span>${SEC_HE[q.sec]}`}</div></div><div style="padding:0 12px"><button class="ab gold" id="fcnext" style="width:100%">הבא</button></div>`:'';
+ return`<div class="panel"><div class="row"><div class="k">סוג</div><div class="seg"><button data-fcm="basic" class="${FCMODE==='basic'?'on':''}">בסיסי</button><button data-fcm="dev" class="${FCMODE==='dev'?'on':''}">סטיות</button></div></div>
+ ${FCMODE==='basic'?`<div class="row"><div class="k">חלק</div><div class="seg">${[['all','הכל'],['pairs','זוגות'],['soft','רכות'],['hard','קשות'],['surrender','כניעה']].map(([v,l])=>`<button data-fcs="${v}" class="${FCSEC===v?'on':''}">${l}</button>`).join('')}</div></div>`:''}
+ <div class="row"><div class="k">טעויות בחזרה<small>תאים שטעית בהם מופיעים יותר</small></div><b>${wrong}</b></div></div>
+ <div class="fc"><div class="lbl">דילר</div>${cardsHTML([q.dealer])}<div class="lbl">היד שלך</div>${cardsHTML(q.cards)}${FCMODE==='dev'?`<div class="cnt">RC ${sgn(q.rc)} · TC ${sgn(q.tc)}</div>`:''}</div>
+ ${FCFB?fb:`<div class="fcacts">${['H','S','D','P','R'].map(a=>`<button class="ab" data-fca="${a}" ${al[a]?'':'disabled'}>${I[a]}${A_HE[a]}</button>`).join('')}</div>`}`;}
+$('#learn').addEventListener('click',e=>{const t=e.target.closest('[data-lt]'),c=e.target.closest('[data-cell]'),a=e.target.closest('[data-fca]'),m=e.target.closest('[data-fcm]'),s=e.target.closest('[data-fcs]');
+ if(t){LT=t.dataset.lt;FCQ=null;}else if(c){const [sec,row,up]=c.dataset.cell.split('|');return explain(sec,row,up);}
+ else if(a&&!a.disabled){const ok=a.dataset.fca===FCQ.exp.action;FCFB={ok};SRS.bump(FCQ.key,ok);ST.n++;if(ok)ST.ok++;saveST();}
+ else if(m){FCMODE=m.dataset.fcm;FCQ=null;}else if(s){FCSEC=s.dataset.fcs;FCQ=null;}else if(e.target.closest('#fcnext')){FCQ=null;}else return;renderLearn();});
+document.addEventListener('click',e=>{if(e.target.closest('#xclose'))closeSheet();});
 route();

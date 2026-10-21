@@ -111,3 +111,27 @@ footer{margin-top:auto;padding-top:26px;font-size:11px;opacity:.5;text-align:cen
 .drillstage .card{transform:scale(1.6);margin:30px}
 .txt{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(232,200,115,.4);background:rgba(0,0,0,.35);color:#fff;font:700 22px Heebo;text-align:center;direction:ltr}
 .note{font-size:12px;opacity:.65;line-height:1.5;margin:8px 14px}
+
+/* ---------- learn ---------- */
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px 4px;scrollbar-width:none}
+.tabs button{flex:none;padding:8px 13px;border-radius:99px;border:1px solid rgba(232,200,115,.35);background:rgba(0,0,0,.3);color:var(--ink);font:600 13px Heebo}
+.tabs button.on{background:linear-gradient(180deg,#f1d68a,#c79a45);color:#2a1c05;border-color:#f7e3a6}
+.grid{direction:ltr;display:grid;grid-template-columns:38px repeat(10,1fr);gap:2px;margin:10px 10px 6px;padding:6px;border-radius:14px;background:rgba(0,0,0,.4);border:1px solid rgba(232,200,115,.25)}
+.grid div{height:30px;display:grid;place-items:center;font:700 11.5px Heebo;border-radius:4px;position:relative;font-variant-numeric:tabular-nums}
+.grid .hd{color:var(--gold);font-size:12px;background:transparent}
+.grid .rh{color:#e6dcc3;background:rgba(255,255,255,.05);font-size:11px}
+.c-H,.c-N,.c-{background:#f4efe3;color:#222}.c-S{background:#e9be3c;color:#2a1c05}.c-D,.c-Y,.c-SUR{background:#2fae6b;color:#fff}.c-Ds,.c-YN{background:#2aa6a0;color:#fff}
+.c-{background:rgba(255,255,255,.06)!important}
+.grid .ix{color:#d0142c}.grid .c-S.ix,.grid .c-H.ix,.grid .c-N.ix,.grid .c-.ix{color:#c8102e}.grid .c-D.ix,.grid .c-Ds.ix,.grid .c-SUR.ix,.grid .c-Y.ix,.grid .c-YN.ix{color:#ffe0e0}
+.grid .off{opacity:.25}
+.grid .dot::after{content:"";position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;background:#d0142c}
+.legend{display:flex;flex-wrap:wrap;gap:8px 12px;margin:4px 14px;font-size:12px;opacity:.85}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-3px;margin-inline-end:4px}
+.devl{margin:10px 12px}
+.devi{display:flex;align-items:center;gap:12px;padding:11px 12px;margin-bottom:8px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid rgba(232,200,115,.2);cursor:pointer}
+.devi .ix{flex:none;min-width:48px;text-align:center;padding:6px 4px;border-radius:10px;background:#f4efe3;color:#c8102e;font:800 16px Heebo;direction:ltr}
+.devi .tt{font-weight:700}.devi .ss{font-size:12.5px;opacity:.75}
+.fc{margin:14px 12px;padding:18px 12px;border-radius:22px;text-align:center;background:radial-gradient(ellipse 90% 70% at 50% 35%,#13744f,#0b5238 60%,#073826);border:5px solid #3a2410;box-shadow:inset 0 0 0 2px rgba(232,200,115,.35)}
+.fc .cards{margin:8px 0}
+.fc .cnt{display:inline-block;margin-top:8px;padding:6px 12px;border-radius:99px;background:rgba(0,0,0,.45);font:700 15px Heebo;direction:ltr}
+.fcacts{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:0 12px}
