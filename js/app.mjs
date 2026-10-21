@@ -65,7 +65,7 @@ function fbHTML(){if(!FB)return`<div class="fb"><span class="muted">${G.phase===
  else if(f.index&&G.counting)why=`<span class="tag">בסיסי</span>תא סטייה ${f.cellKey} (אינדקס <b dir="ltr">${f.index}</b>) לא הופעל ב-${cnt}`;
  else if(f.alsoIndex&&G.counting)why=`<span class="tag">בסיסי</span>נבדק גם ${f.alsoIndex.cellKey} (אינדקס <b dir="ltr">${f.alsoIndex.index}</b>) ולא הופעל`;
  else why=`<span class="tag">בסיסי</span>לפי טבלת ${S.h17?'H17':'S17'}`;
- return`<div class="fb ${f.ok?'ok':'bad'}"><div class="hd">${f.ok?I.ok:I.bad}${f.ok?'נכון':'לא נכון'} · הנכון: ${want}</div><div class="muted">היד: ${ins?'ביטוח מול A':`${f.hand.join(', ')} מול ${f.up}`}</div><div>${why}</div></div>`;}
+ return`<div class="fb ${f.ok?'ok':'bad'}"><div class="hd">${f.ok?I.ok:I.bad}${f.ok?'נכון':'לא נכון'} · הנכון: ${want}</div><div class="muted">היד: ${ins?'ביטוח מול A':`<span dir="ltr">${f.hand.join(', ')}</span> מול <span dir="ltr">${f.up}</span>`}</div><div>${why}</div></div>`;}
 function resTag(w){return w>0?`<span class="res w">+${w}</span>`:w<0?`<span class="res l">${w}</span>`:`<span class="res p">push</span>`;}
 function render(){const g=G,done=g.phase==='done';const me=g.seats[g.playerSeat];
  const countPill=`<button class="pill" id="cnt">${S.showCount||peekCount||!g.counting?`RC <b>${sgn(g.rc)}</b> · TC <b>${sgn(g.tc)}</b>`:`${I.eye.replace('<svg','<svg width="14" height="14" style="vertical-align:-2px"')} ספירה מוסתרת`}</button>`;
