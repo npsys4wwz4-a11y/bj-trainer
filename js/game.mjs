@@ -1,15 +1,15 @@
 import {decide,takeInsurance,trueCount,hiLo,handTotal,isBJ,makeShoe,val} from './engine.mjs';
-export const DEFAULTS={decks:6,pen:75,bots:2,h17:false,das:true,resplit:true,resplitAces:false,hitSplitAces:false,surrender:true,surrenderA:false,payout:'3:2',mode:'count',showCount:false,quizEvery:5,tcMethod:'trunc'};
+export const DEFAULTS={decks:6,pen:75,bots:2,h17:false,das:true,resplit:true,resplitAces:false,hitSplitAces:false,surrender:true,surrenderA:false,payout:'3:2',mode:'count',showCount:false,quizEvery:5,tcMethod:'trunc',trayTicks:true,quizDecks:true};
 export class Game{
   constructor(settings,rand=Math.random){this.set=Object.assign({},DEFAULTS,settings);this.rand=rand;this.rounds=0;this.bank=0;this.newShoe();}
   get counting(){return this.set.mode==='count';}
   get rules(){const s=this.set;return{h17:s.h17,das:s.das,surrender:s.surrender,surrenderA:s.surrenderA};}
-  newShoe(){this.shoe=makeShoe(this.set.decks,this.rand);this.total=this.shoe.length;this.rc=0;this.justShuffled=true;}
+  newShoe(){this.shoe=makeShoe(this.set.decks,this.rand);this.total=this.shoe.length;this.rc=0;this.discarded=0;this.justShuffled=true;}
   get tc(){return trueCount(this.rc,this.shoe.length,this.set.tcMethod);}
   get decksLeft(){return this.shoe.length/52;}
   draw(visible=true){if(!this.shoe.length)this.newShoe();const c=this.shoe.pop();c.up=visible;if(visible)this.rc+=hiLo(c.r);return c;}
   needShuffle(){return this.set.mode==='basic'||(this.total-this.shoe.length)>=this.total*this.set.pen/100;}
-  start(){this.justShuffled=false;if(this.needShuffle())this.newShoe();this.rounds++;
+  start(){this.justShuffled=false;this.discarded=this.total-this.shoe.length;if(this.needShuffle())this.newShoe();this.rounds++;
     const n=this.set.bots,pi=Math.floor(n/2);this.playerSeat=pi;
     this.seats=[];for(let i=0;i<=n;i++)this.seats.push({bot:i!==pi,hands:[{cards:[],bet:1}]});
     this.dealer=[];this.log=[];
@@ -66,5 +66,7 @@ export class Game{
       h.win=w;}
     const me=this.seats[this.playerSeat];let net=me.hands.reduce((a,h)=>a+h.win,0);
     if(this.insurance)net+=dBJ?1:-0.5;me.net=net;this.bank+=net;}
-  quizDue(){return this.counting&&!this.set.showCount&&this.set.quizEvery>0&&this.rounds>0&&this.rounds%this.set.quizEvery===0;}
+  /** cards in the discard tray (after a round ends everything dealt is discarded) */
+  trayCards(){return this.phase==='done'?this.total-this.shoe.length:this.discarded;}
+  quizDue(){return this.counting&&(!this.set.showCount||this.set.quizDecks)&&this.set.quizEvery>0&&this.rounds>0&&this.rounds%this.set.quizEvery===0;}
 }

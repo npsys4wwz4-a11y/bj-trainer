@@ -69,6 +69,15 @@ function fbHTML(){if(!FB)return`<div class="fb"><span class="muted">${G.phase===
  else if(f.alsoIndex&&G.counting)why=`<span class="tag">בסיסי</span>נבדק גם ${f.alsoIndex.cellKey} (אינדקס <b dir="ltr">${f.alsoIndex.index}</b>) ולא הופעל`;
  else why=`<span class="tag">בסיסי</span>לפי טבלת ${S.h17?'H17':'S17'}`;
  return`<div class="fb ${f.ok?'ok':'bad'}"><div class="hd">${f.ok?I.ok:I.bad}${f.ok?'נכון':'לא נכון'} · הנכון: ${want}</div><div class="muted">היד: ${ins?'ביטוח מול A':`<span dir="ltr">${f.hand.join(', ')}</span> מול <span dir="ltr">${f.up}</span>`}</div><div>${why}</div></div>`;}
+// Discard tray: side view, constant physical scale (PX per deck), so 1..8 decks look as they would in a casino.
+export const TRAY_PX=14;
+function trayHTML(g,ticks){const D=g.set.decks,H=D*TRAY_PX,dc=g.trayCards(),h=Math.min(H,dc/52*TRAY_PX),W=38,top=6,x0=6;
+ let t='';if(ticks)for(let k=1;k<2*D;k++){const y=top+H-k*TRAY_PX/2,full=k%2===0;t+=`<line x1="${x0+W+1}" x2="${x0+W+(full?7:4)}" y1="${y}" y2="${y}" stroke="#e8c873" stroke-width="${full?1.2:.8}"/>`;if(full&&(D<=4||k%4===0))t+=`<text x="${x0+W+9}" y="${y+3}" font-size="8" fill="#e8c873" font-family="Heebo">${k/2}</text>`;}
+ return`<div class="tray" title="מגש זריקה"><svg width="${W+26}" height="${H+top+8}" viewBox="0 0 ${W+26} ${H+top+8}" data-tray="${dc}">
+ <defs><pattern id="edge" width="4" height="1.6" patternUnits="userSpaceOnUse"><rect width="4" height="1.6" fill="#f3ecdb"/><rect y="1.1" width="4" height=".5" fill="#b9ad93"/></pattern></defs>
+ <rect x="${x0}" y="${top+H-h}" width="${W}" height="${h}" fill="url(#edge)"/><rect x="${x0}" y="${top+H-h}" width="${W}" height="${Math.min(h,1.5)}" fill="#7a1420"/>
+ <path d="M${x0-2} ${top-2}V${top+H+2}H${x0+W+2}V${top-2}" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.55)" stroke-width="1.4"/>
+ <rect x="${x0-4}" y="${top+H+2}" width="${W+8}" height="4" rx="1" fill="#2b1a0b"/>${t}</svg><div class="seatname">זריקה</div></div>`;}
 function resTag(w){return w>0?`<span class="res w">+${w}</span>`:w<0?`<span class="res l">${w}</span>`:`<span class="res p">push</span>`;}
 function render(){const g=G,done=g.phase==='done';const me=g.seats[g.playerSeat];
  const countPill=`<button class="pill" id="cnt">${S.showCount||peekCount||!g.counting?`RC <b>${sgn(g.rc)}</b> · TC <b>${sgn(g.tc)}</b>`:`${I.eye.replace('<svg','<svg width="14" height="14" style="vertical-align:-2px"')} ספירה מוסתרת`}</button>`;
@@ -78,22 +87,27 @@ function render(){const g=G,done=g.phase==='done';const me=g.seats[g.playerSeat]
  else if(g.phase==='insurance')acts=`<div class="acts two"><button class="ab" data-ins="1">${I.ok}לקחת ביטוח</button><button class="ab" data-ins="0">${I.bad}לא לקחת</button></div>`;
  else acts=`<div class="acts one"><button class="ab gold" id="dealBtn">${I.deal}חלוקה${done&&me.net!==undefined?` · יד אחרונה ${sgn(me.net)}`:''}</button></div>`;
  $('#practice').innerHTML=bar(g.counting?'תרגול עם ספירה':'אסטרטגיה בסיסית',`${countPill}<button class="iconbtn" data-go="settings" aria-label="הגדרות">${I.gear}</button>`)+
- `<div class="felt"><div class="zone">${cardsHTML(g.dealer)}<div class="lbl">דילר<span class="tot">${totTxt(g.dealer)}</span></div></div>
+ `<div class="felt">${g.counting?trayHTML(g,S.trayTicks):''}<div class="zone">${cardsHTML(g.dealer)}<div class="lbl">דילר<span class="tot">${totTxt(g.dealer)}</span></div></div>
   <div class="arc">${S.h17?'DEALER HITS SOFT 17':'DEALER STANDS ON ALL 17'} · BLACKJACK PAYS ${S.payout} · INSURANCE PAYS 2:1</div>
   <div class="bots">${bots}</div><div class="mine">${mine}</div></div>${fbHTML()}
-  <div class="note">${g.counting?`נעל ${S.decks} חפיסות · נותרו ${g.decksLeft.toFixed(1)} · חיתוך ${S.pen}%`:'ערבוב רציף (CSM)'} · מאזן ${sgn(+g.bank.toFixed(1))} יח'</div>${acts}`;}
+  <div class="note">${g.counting?`נעל ${S.decks} חפיסות${S.showCount||peekCount?` · נותרו ${g.decksLeft.toFixed(1)}`:''} · חיתוך ${S.pen}%`:'ערבוב רציף (CSM)'} · מאזן ${sgn(+g.bank.toFixed(1))} יח'</div>${acts}`;}
 $('#practice').addEventListener('click',e=>{const a=e.target.closest('[data-a]'),i=e.target.closest('[data-ins]');
  if(a&&!a.disabled){const fb=G.act(a.dataset.a);if(fb){FB=fb;rec(fb);}render();}
  else if(i){FB=G.insure(i.dataset.ins==='1');rec(FB);render();}
  else if(e.target.closest('#dealBtn'))deal();
  else if(e.target.closest('#cnt')&&G.counting&&!S.showCount){peekCount=!peekCount;render();}});
-function quiz(){const tc=G.tc,rc=G.rc;sheet(`<h3>בוחן ספירה</h3><div class="note">אחרי ${G.rounds} ידיים. נותרו ${G.decksLeft.toFixed(2)} חפיסות. שיטת TC: ${TCM[S.tcMethod]}.</div>
- <div class="field"><span>ספירה רצה (RC)</span>${numCtl('qrc',0)}</div><div class="field"><span>ספירה אמיתית (TC)</span>${numCtl('qtc',0)}</div>
+function quiz(){const tc=G.tc,rc=G.rc,askC=!S.showCount,askD=S.quizDecks,dl=G.shoe.length/52,dAns=Math.round(dl*2)/2;
+ sheet(`<h3>בוחן ${askC?'ספירה':'חפיסות'}</h3><div class="note">אחרי ${G.rounds} ידיים.${askC?` שיטת TC: ${TCM[S.tcMethod]}.`:''}${askD?' הסתכל על מגש הזריקה.':` נותרו ${dl.toFixed(2)} חפיסות.`}</div>
+ ${askD?`<div class="field"><span>כמה חפיסות נותרו?</span>${numCtl('qdl',S.decks/2,.5)}</div>`:''}
+ ${askC?`<div class="field"><span>ספירה רצה (RC)</span>${numCtl('qrc',0)}</div><div class="field"><span>ספירה אמיתית (TC)</span>${numCtl('qtc',0)}</div>`:''}
  <button class="ab gold" id="qgo" style="width:100%;margin-top:10px">בדיקה</button><div id="qres"></div>`);
- $('#qgo').onclick=()=>{if($('#qgo').dataset.d){closeSheet();return deal();}const a=+$('#qrc').value,b=+$('#qtc').value;const ok=a===rc&&b===tc;ST.qn++;if(ok)ST.qok++;saveST();
-  $('#qres').innerHTML=`<div class="fb ${ok?'ok':'bad'}" style="margin:12px 0 0"><div class="hd">${ok?I.ok:I.bad}${ok?'מדויק':'לא מדויק'}</div>RC ${sgn(rc)} · TC ${sgn(tc)} <span class="muted">(${sgn(rc)} / ${G.decksLeft.toFixed(2)} = ${(rc/G.decksLeft).toFixed(2)})</span></div>`;$('#qgo').textContent='המשך';$('#qgo').dataset.d=1;};}
-const numCtl=(id,v)=>`<div class="num"><button data-step="-1" data-for="${id}">−</button><output id="${id}" value="${v}">${v}</output><button data-step="1" data-for="${id}">+</button></div>`;
-document.addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(!b)return;const o=document.getElementById(b.dataset.for);o.value=+o.value+ +b.dataset.step;o.textContent=sgn(+o.value);});
+ $('#qgo').onclick=()=>{if($('#qgo').dataset.d){closeSheet();return deal();}let ok=true,msg=[];
+  if(askD){const v=+$('#qdl').value,o=v===dAns;ok=ok&&o;msg.push(`חפיסות שנותרו: ${dl.toFixed(2)} (≈ ${dAns}) ${o?'':'· ענית '+v}`);}
+  if(askC){const a=+$('#qrc').value,b=+$('#qtc').value;ok=ok&&a===rc&&b===tc;msg.push(`RC ${sgn(rc)} · TC ${sgn(tc)} <span class="muted">(${sgn(rc)} / ${dl.toFixed(2)} = ${(rc/dl).toFixed(2)})</span>`);}
+  ST.qn++;if(ok)ST.qok++;saveST();
+  $('#qres').innerHTML=`<div class="fb ${ok?'ok':'bad'}" style="position:static;margin:12px 0 0"><div class="hd">${ok?I.ok:I.bad}${ok?'מדויק':'לא מדויק'}</div>${msg.join('<br>')}</div>`;$('#qgo').textContent='המשך';$('#qgo').dataset.d=1;};}
+const numCtl=(id,v,st=1)=>`<div class="num"><button data-step="${-st}" data-for="${id}">−</button><output id="${id}" value="${v}">${v}</output><button data-step="${st}" data-for="${id}">+</button></div>`;
+document.addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(!b)return;const o=document.getElementById(b.dataset.for);o.value=Math.max(o.id==='qdl'?0:-999,+o.value+ +b.dataset.step);o.textContent=o.id==='qdl'?o.value:sgn(+o.value);});
 function sheet(h){$('#sheetIn').innerHTML=h;$('#sheet').classList.add('on');}function closeSheet(){$('#sheet').classList.remove('on');}
 // ---------- settings ----------
 const TCM={trunc:'קיצוץ לכיוון 0',floor:'עיגול כלפי מטה',round:'עיגול לקרוב'};
@@ -115,7 +129,9 @@ function renderSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l
  ${r('תשלום בלאק ג\'ק','',seg('payout',[['3:2','3:2'],['6:5','6:5']]))}</div>
  <div class="panel"><h4>ספירה</h4>
  ${r('הצג ספירה תמיד','מוסתר כברירת מחדל; הקשה על הספירה מציצה',sw('showCount'))}
- ${r('בוחן ספירה כל','ידיים (כשהספירה מוסתרת)',seg('quizEvery',[[0,'כבוי'],[3,3],[5,5],[10,10]]))}
+ ${r('סימוני חפיסות במגש','כבוי = מצב קשה, הערכה בעין',sw('trayTicks'))}
+ ${r('שאלת "כמה חפיסות נותרו"','חלק מהבוחן',sw('quizDecks'))}
+ ${r('בוחן ספירה כל','ידיים',seg('quizEvery',[[0,'כבוי'],[3,3],[5,5],[10,10]]))}
  ${r('המרה ל-TC','RC חלקי חפיסות שנותרו',seg('tcMethod',[['trunc','קיצוץ'],['floor','מטה'],['round','קרוב']]))}</div>
  <p class="note">TC = ספירה רצה ÷ (קלפים שנותרו בנעל ÷ 52). ברירת מחדל: קיצוץ לכיוון אפס (למשל 2.7 → 2, ‎-2.7 → ‎-2). אינדקסים לפי טבלאות Blackjack Apprenticeship: "n+" = TC ≥ n, "n-" = TC ≤ n, "0+"/"0-" = ספירה רצה חיובית/שלילית (לפי מקרא הטבלה). סדר החלטות: פיצול (כשהטבלה אומרת לפצל), כניעה, הכפלה, קלף/עמידה. כניעה מול אס רק אם הופעלה בהגדרות.</p>
  <div class="panel"><div class="row"><div class="k">איפוס סטטיסטיקה</div><button class="pill" id="rst">איפוס</button></div></div>`;}

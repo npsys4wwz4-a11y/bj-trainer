@@ -29,3 +29,6 @@ const gb=new Game({mode:'basic'});gb.start();gb.rc=30;assert.strictEqual(gb.insu
 const ga=new Game({});ga.start();ga.dealer[0]={r:'A',up:true,s:0};assert.strictEqual(ga.allowed().R,false,'no surrender vs A by default');
 const gA=new Game({surrenderA:true});gA.start();gA.dealer[0]={r:'A',up:true,s:0};gA.seatIdx=gA.playerSeat;gA.hi=0;assert.strictEqual(gA.allowed().R,true);
 console.log('game OK');
+// discard tray count
+{const g=new Game({decks:2});assert.strictEqual(g.trayCards(),0);g.start();const used=()=>g.total-g.shoe.length;while(g.phase!=='done'){if(g.phase==='insurance')g.insure(false);else g.act(decide(g.ctx()).action);}
+ const after=used();assert.strictEqual(g.trayCards(),after);g.start();assert.strictEqual(g.trayCards(),g.justShuffled?0:after);console.log('tray OK');}
