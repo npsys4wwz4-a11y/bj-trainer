@@ -1,9 +1,9 @@
 import {decide,takeInsurance,trueCount,hiLo,handTotal,isBJ,makeShoe,val} from './engine.mjs';
-export const DEFAULTS={decks:6,pen:75,bots:2,h17:false,das:true,resplit:true,resplitAces:false,hitSplitAces:false,surrender:true,payout:'3:2',mode:'count',showCount:false,quizEvery:5,tcMethod:'trunc'};
+export const DEFAULTS={decks:6,pen:75,bots:2,h17:false,das:true,resplit:true,resplitAces:false,hitSplitAces:false,surrender:true,surrenderA:false,payout:'3:2',mode:'count',showCount:false,quizEvery:5,tcMethod:'trunc'};
 export class Game{
   constructor(settings,rand=Math.random){this.set=Object.assign({},DEFAULTS,settings);this.rand=rand;this.rounds=0;this.bank=0;this.newShoe();}
   get counting(){return this.set.mode==='count';}
-  get rules(){const s=this.set;return{h17:s.h17,das:s.das,surrender:s.surrender};}
+  get rules(){const s=this.set;return{h17:s.h17,das:s.das,surrender:s.surrender,surrenderA:s.surrenderA};}
   newShoe(){this.shoe=makeShoe(this.set.decks,this.rand);this.total=this.shoe.length;this.rc=0;this.justShuffled=true;}
   get tc(){return trueCount(this.rc,this.shoe.length,this.set.tcMethod);}
   get decksLeft(){return this.shoe.length/52;}
@@ -43,7 +43,7 @@ export class Game{
     const isA=pair&&h.cards[0].r==='A';const maxH=this.set.resplit?4:2;
     const canSplit=pair&&s.hands.length<maxH&&(!h.splitAces||this.set.resplitAces)&&(s.hands.length===1||this.set.resplit)&&(!isA||!h.splitAces||this.set.resplitAces);
     const canDouble=two&&(!h.fromSplit||this.set.das)&&!(h.splitAces);
-    const canSurrender=this.set.surrender&&two&&s.hands.length===1;
+    const canSurrender=this.set.surrender&&two&&s.hands.length===1&&(this.up!=='A'||this.set.surrenderA);
     return{H:!(h.splitAces&&!this.set.hitSplitAces),S:true,D:canDouble,P:canSplit,R:canSurrender};}
   ctx(){const a=this.allowed();return{cards:this.hand().cards,up:this.up,rules:this.rules,rc:this.rc,tc:this.tc,counting:this.counting,canSplit:a.P,canDouble:a.D,canSurrender:a.R};}
   /** player action => feedback object */

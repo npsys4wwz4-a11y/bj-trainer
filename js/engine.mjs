@@ -19,18 +19,18 @@ function cell(rules,sec,row,up,ctx){const {name,ch}=chartFor(rules);const ui=UPC
   return{code:met?dev:base,src:met?'deviation':'basic',index:c,cellKey:`${sec} ${row} vs ${up}`,base,dev};}
 const pairRow=r=>{const v=val(r);return v===11?'A,A':v===10?'T,T':`${v},${v}`;};
 /**
- * Correct action, following BJA order: surrender > split > double > hit/stand.
+ * Correct action: split (when chart says split) > surrender > double > hit/stand.
  * s = {cards, up (rank), rules, rc, tc, counting, canSplit, canDouble, canSurrender}
  * returns {action:'H'|'S'|'D'|'P'|'R', src, index?, cellKey?, note}
  */
 export function decide(s){const up=upKey(s.up),ctx={counting:s.counting,rc:s.rc,tc:s.tc},R=s.rules;const {total,soft}=handTotal(s.cards);
   let info=null;const out=(action,c,extra)=>({action,src:c?c.src:'basic',index:c&&c.index,cellKey:c&&c.cellKey,...extra});
   if(total>=21)return out('S',null,{note:'21'});
-  // 1 surrender (first two cards, hard totals present in surrender table)
-  if(s.canSurrender&&!soft&&R.surrender&&s.cards.length===2){const c=cell(R,'surrender',String(total),up,ctx);if(c){if(c.code==='SUR')return out('R',c);if(c.index)info=c;}}
-  // 2 split
+  // 1 split (user rule: a chart split beats surrender, e.g. 8,8 always splits)
   if(s.canSplit&&s.cards.length===2&&val(s.cards[0].r)===val(s.cards[1].r)){const c=cell(R,'pairs',pairRow(s.cards[0].r),up,ctx);
     if(c.code==='Y'||(c.code==='Y/N'&&R.das))return out('P',c);if(c.index)info=info||c;}
+  // 2 surrender (late; vs Ace only if the casino allows it)
+  if(s.canSurrender&&!soft&&R.surrender&&(up!=='A'||R.surrenderA)&&s.cards.length===2){const c=cell(R,'surrender',String(total),up,ctx);if(c){if(c.code==='SUR')return out('R',c);if(c.index)info=info||c;}}
   // 3/4 totals
   let c;if(soft){if(total===12)return out('H',null,{note:'soft 12 (A,A not split): not in chart, hit'});c=total>=21?null:cell(R,'soft',`A,${total-11}`,up,ctx);}
   else{if(total>=17)c=cell(R,'hard','17',up,ctx);else if(total<=8)c=total===8?cell(R,'hard','8',up,ctx):null;else c=cell(R,'hard',String(total),up,ctx);}

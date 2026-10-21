@@ -108,12 +108,13 @@ function renderSettings(){const seg=(k,opts)=>`<div class="seg">${opts.map(([v,l
  ${r('פיצול חוזר של אסים','',sw('resplitAces'))}
  ${r('קלף נוסף לאסים מפוצלים','',sw('hitSplitAces'))}
  ${r('כניעה מאוחרת','',sw('surrender'))}
+ ${r('כניעה מול אס של הדילר','ברוב הקזינו לא מותר',sw('surrenderA'))}
  ${r('תשלום בלאק ג\'ק','',seg('payout',[['3:2','3:2'],['6:5','6:5']]))}</div>
  <div class="panel"><h4>ספירה</h4>
  ${r('הצג ספירה תמיד','מוסתר כברירת מחדל; הקשה על הספירה מציצה',sw('showCount'))}
  ${r('בוחן ספירה כל','ידיים (כשהספירה מוסתרת)',seg('quizEvery',[[0,'כבוי'],[3,3],[5,5],[10,10]]))}
  ${r('המרה ל-TC','RC חלקי חפיסות שנותרו',seg('tcMethod',[['trunc','קיצוץ'],['floor','מטה'],['round','קרוב']]))}</div>
- <p class="note">TC = ספירה רצה ÷ (קלפים שנותרו בנעל ÷ 52). ברירת מחדל: קיצוץ לכיוון אפס (למשל 2.7 → 2, ‎-2.7 → ‎-2). אינדקסים לפי טבלאות Blackjack Apprenticeship: "n+" = TC ≥ n, "n-" = TC ≤ n, "0+"/"0-" = ספירה רצה חיובית/שלילית (לפי מקרא הטבלה). סדר החלטות לפי BJA: כניעה, פיצול, הכפלה, קלף/עמידה.</p>
+ <p class="note">TC = ספירה רצה ÷ (קלפים שנותרו בנעל ÷ 52). ברירת מחדל: קיצוץ לכיוון אפס (למשל 2.7 → 2, ‎-2.7 → ‎-2). אינדקסים לפי טבלאות Blackjack Apprenticeship: "n+" = TC ≥ n, "n-" = TC ≤ n, "0+"/"0-" = ספירה רצה חיובית/שלילית (לפי מקרא הטבלה). סדר החלטות: פיצול (כשהטבלה אומרת לפצל), כניעה, הכפלה, קלף/עמידה. כניעה מול אס רק אם הופעלה בהגדרות.</p>
  <div class="panel"><div class="row"><div class="k">איפוס סטטיסטיקה</div><button class="pill" id="rst">איפוס</button></div></div>`;}
 $('#settings').addEventListener('click',e=>{const b=e.target.closest('[data-k]'),w=e.target.closest('[data-sw]');
  if(b){let v=b.dataset.v;v=v==='true'?true:v==='false'?false:isNaN(+v)?v:+v;S[b.dataset.k]=v;}else if(w)S[w.dataset.sw]=!S[w.dataset.sw];

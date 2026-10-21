@@ -1,9 +1,9 @@
 import assert from 'node:assert';
 import {decide,trueCount,indexMet,hiLo,handTotal,takeInsurance,makeShoe} from '../js/engine.mjs';
 const C=(...rs)=>rs.map(r=>({r,s:0}));
-const base={rules:{h17:false,das:true,surrender:true},rc:0,tc:0,counting:true,canSplit:true,canDouble:true,canSurrender:true};
+const base={rules:{h17:false,das:true,surrender:true,surrenderA:true},rc:0,tc:0,counting:true,canSplit:true,canDouble:true,canSurrender:true};
 const d=(cards,up,o={})=>decide({...base,...o,rules:{...base.rules,...(o.rules||{})},cards:C(...cards),up});
-const H17={h17:true,das:true,surrender:true};
+const H17={h17:true,das:true,surrender:true,surrenderA:true};const H17n={...H17,surrenderA:false};
 const t=(name,got,exp)=>{assert.strictEqual(got,exp,name);};
 // counts
 t('hilo', [..."23456"].map(hiLo).join(), '1,1,1,1,1'); t('hilo0',[7,8,9].map(String).map(hiLo).join(),'0,0,0'); t('hilo-',['10','J','Q','K','A'].map(hiLo).join(),'-1,-1,-1,-1,-1');
@@ -35,7 +35,7 @@ t('dev src',d(['6','5'],'A',{tc:1,rc:2}).src,'deviation'); t('dev index',d(['6',
 t('basic mode 16v10 hit',d(['10','6'],'10',{counting:false,rc:20,tc:5,canSurrender:false}).action,'H');
 t('ins tc3',takeInsurance(true,3),true); t('ins tc2',takeInsurance(true,2),false); t('ins basic',takeInsurance(false,9),false);
 // pairs / DAS / order
-t('8,8v7 split',d(['8','8'],'7').action,'P'); t('8,8vA surrender first',d(['8','8'],'A').action,'R'); t('8,8v10 surrender first (BJA order)',d(['8','8'],'10').action,'R');
+t('8,8v7 split',d(['8','8'],'7').action,'P'); t('8,8vA split beats surrender',d(['8','8'],'A').action,'P'); t('8,8v10 split beats surrender',d(['8','8'],'10').action,'P');t('8,8v10 H17 split',d(['8','8'],'10',{rules:H17}).action,'P');t('8,8v10 cannot split -> surrender',d(['8','8'],'10',{canSplit:false}).action,'R');t('7,7v10 no split -> no sur row 14 -> hit',d(['7','7'],'10').action,'H');
 t('8,8v10 no surrender split',d(['8','8'],'10',{canSurrender:false}).action,'P');
 t('2,2v2 DAS split',d(['2','2'],'2').action,'P'); t('2,2v2 noDAS hit',d(['2','2'],'2',{rules:{das:false}}).action,'H');
 t('4,4v5 noDAS -> hard 8 hit',d(['4','4'],'5',{rules:{das:false}}).action,'H'); t('5,5v9 -> double',d(['5','5'],'9').action,'D');
@@ -50,4 +50,13 @@ t('H17 15vA 5+ stand nosur',d(['10','5'],'A',{rules:H17,tc:5,rc:20,canSurrender:
 t('H17 16vA 3+ stand nosur',d(['10','6'],'A',{rules:H17,tc:3,rc:9,canSurrender:false}).action,'S');
 t('H17 10vA 3+',d(['6','4'],'A',{rules:H17,tc:3,rc:9}).action,'D');
 t('handTotal soft',handTotal(C('A','6')).soft,true); t('handTotal AA9',handTotal(C('A','A','9')).total,21);
+// surrender vs Ace OFF
+const nA={rules:{surrenderA:false}};
+t('noSurA 16vA S17 -> hit',d(['10','6'],'A',nA).action,'H');
+t('noSurA 15vA S17 tc2 -> hit',d(['10','5'],'A',{...nA,tc:2,rc:4}).action,'H');
+t('noSurA H17 17vA -> stand',d(['10','7'],'A',{rules:H17n}).action,'S');
+t('noSurA H17 16vA 3+ -> stand',d(['10','6'],'A',{rules:H17n,tc:3,rc:9}).action,'S');
+t('noSurA H17 16vA tc2 -> hit',d(['10','6'],'A',{rules:H17n,tc:2,rc:9}).action,'H');
+t('noSurA H17 15vA 5+ -> stand',d(['10','5'],'A',{rules:H17n,tc:5,rc:20}).action,'S');
+t('noSurA 16v10 still surrender',d(['10','6'],'10',nA).action,'R');
 console.log('engine OK');
