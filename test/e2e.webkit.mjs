@@ -1,5 +1,5 @@
 import {webkit,devices} from 'playwright';
-const out='/workspace/bj/screens/';const b=await webkit.launch();const ctx=await b.newContext({...devices['iPhone 14']});const p=await ctx.newPage();
+const out=process.argv[3]||'/workspace/bj/screens/';const b=await webkit.launch();const ctx=await b.newContext({...devices['iPhone 14']});const p=await ctx.newPage();
 const errs=[];p.on('pageerror',e=>errs.push(String(e)));p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 const URL=process.argv[2]||'http://localhost:8765/';
 await p.goto(URL);await p.waitForTimeout(1200);await p.screenshot({path:out+'home.png'});
