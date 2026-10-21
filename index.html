@@ -4,47 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#06281c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>מאמן בלאק ג'ק</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-:root{--gold:#e8c873;--gold2:#b8903c;--felt:#0b4a33;--ink:#f6efe0}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{font-family:Heebo,system-ui,sans-serif;color:var(--ink);background:#03140e;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
-.bg{position:fixed;inset:0;z-index:-1;
- background:
-  radial-gradient(ellipse 120% 70% at 50% 110%, #0f6a48 0%, #0b4a33 35%, #062a1d 65%, #020c08 100%)}
-.bg::after{content:"";position:absolute;inset:0;opacity:.18;mix-blend-mode:overlay;
- background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
-.bokeh{position:absolute;border-radius:50%;filter:blur(14px);opacity:.55;animation:drift 14s ease-in-out infinite alternate}
-@keyframes drift{to{transform:translate(12px,-18px) scale(1.08);opacity:.35}}
-.wrap{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 48px) 22px calc(env(safe-area-inset-bottom) + 28px)}
-.crest{width:88px;height:88px;margin-bottom:18px;filter:drop-shadow(0 6px 18px rgba(232,200,115,.35))}
-h1{font-family:"Frank Ruhl Libre",serif;font-weight:900;font-size:44px;line-height:1.05;text-align:center;
- background:linear-gradient(180deg,#fff3c9 0%,var(--gold) 45%,var(--gold2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:.5px}
-.sub{margin-top:10px;font-size:15px;color:#d9ceb2;opacity:.85;text-align:center}
-.rule{width:140px;height:1px;margin:22px 0 26px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.chips{position:relative;width:240px;height:120px;margin-bottom:28px}
-.chips svg{position:absolute;filter:drop-shadow(0 8px 10px rgba(0,0,0,.5))}
-nav{width:100%;max-width:400px;display:flex;flex-direction:column;gap:14px}
-.btn{display:flex;align-items:center;gap:16px;width:100%;padding:16px 18px;border-radius:18px;text-align:right;font:inherit;color:inherit;cursor:pointer;
- border:1px solid rgba(232,200,115,.35);background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
- box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);transition:transform .15s}
-.btn:active{transform:scale(.98)}
-.btn.primary{background:linear-gradient(180deg,#f1d68a,#c79a45);color:#2a1c05;border-color:#f7e3a6}
-.btn .ic{flex:none;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:rgba(0,0,0,.22);border:1px solid rgba(232,200,115,.3)}
-.btn.primary .ic{background:rgba(42,28,5,.12);border-color:rgba(42,28,5,.25)}
-.btn svg.i{width:26px;height:26px}
-.t{font-weight:700;font-size:18px}.d{font-size:13px;opacity:.75;margin-top:2px}
-.btn.soon{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
-.badge{margin-inline-start:auto;font-size:11px;font-weight:700;padding:4px 9px;border-radius:99px;border:1px solid var(--gold2);color:var(--gold)}
-footer{margin-top:auto;padding-top:26px;font-size:11px;opacity:.5;text-align:center}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700;900&family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 <div class="bg" id="bg"></div>
-<main class="wrap">
+<main class="wrap view" id="home">
  <svg class="crest" viewBox="0 0 100 100" aria-hidden="true">
   <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c9"/><stop offset=".5" stop-color="#e8c873"/><stop offset="1" stop-color="#9c7629"/></linearGradient></defs>
   <circle cx="50" cy="50" r="46" fill="none" stroke="url(#g)" stroke-width="2.5"/>
@@ -68,6 +37,14 @@ footer{margin-top:auto;padding-top:26px;font-size:11px;opacity:.5;text-align:cen
    <span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#e8c873" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg></span>
    <span><div class="t">הגדרות</div><div class="d">חפיסות, DAS, תדירות בוחן, הצגת ספירה</div></span>
   </button>
+  <button class="btn" data-go="drills">
+   <span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#e8c873" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5M12 2.5V5"/></svg></span>
+   <span><div class="t">תרגילים</div><div class="d">ספירת חפיסה נגד השעון, המרה לספירה אמיתית</div></span>
+  </button>
+  <button class="btn" data-go="stats">
+   <span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#e8c873" stroke-width="1.7" stroke-linecap="round"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></svg></span>
+   <span><div class="t">סטטיסטיקה</div><div class="d">דיוק, בסיסי מול סטיות, טעויות נפוצות</div></span>
+  </button>
   <button class="btn soon" disabled aria-disabled="true">
    <span class="ic"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="#e8c873" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5c3-1.5 6-1.5 9 0v13c-3-1.5-6-1.5-9 0z"/><path d="M21 6.5c-3-1.5-6-1.5-9 0v13c3-1.5 6-1.5 9 0z"/></svg></span>
    <span><div class="t">לימוד הטבלאות</div><div class="d">שינון אסטרטגיה וסטיות</div></span>
@@ -76,16 +53,11 @@ footer{margin-top:auto;padding-top:26px;font-size:11px;opacity:.5;text-align:cen
  </nav>
  <footer>טבלאות: Blackjack Apprenticeship · כלי לאימון בלבד</footer>
 </main>
-<script>
-// casino-light bokeh
-const bg=document.getElementById('bg'),cols=['#ffd27a','#ff9f5a','#fff0c2','#e8c873','#ff6b5a','#9fe0c0'];
-for(let i=0;i<22;i++){const b=document.createElement('div');b.className='bokeh';const s=20+Math.random()*90;
- Object.assign(b.style,{width:s+'px',height:s+'px',left:Math.random()*100+'%',top:Math.random()*55+'%',background:cols[i%cols.length],animationDelay:(-Math.random()*14)+'s',opacity:.2+Math.random()*.4});bg.appendChild(b);}
-// chip stacks (SVG)
-function chip(c,edge){return `<svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="40" fill="${c}"/>${[...Array(8)].map((_,k)=>`<rect x="38" y="2" width="8" height="13" rx="1.5" fill="${edge}" transform="rotate(${k*45} 42 42)"/>`).join('')}<circle cx="42" cy="42" r="27" fill="none" stroke="${edge}" stroke-width="1.5" stroke-dasharray="4 3"/><circle cx="42" cy="42" r="22" fill="${c}" stroke="rgba(0,0,0,.25)"/><text x="42" y="48" text-anchor="middle" font-family="Frank Ruhl Libre,serif" font-weight="700" font-size="16" fill="${edge}">BJ</text></svg>`}
-const ch=document.getElementById('chips');
-[['#8f1d24','#f3e6c8',10,30,-12],['#14213d','#e8c873',78,8,6],['#0d0d0d','#e8c873',146,34,18]].forEach(([c,e,x,y,r])=>{const d=document.createElement('div');d.innerHTML=chip(c,e);const s=d.firstChild;s.style.left=x+'px';s.style.top=y+'px';s.style.transform=`rotate(${r}deg)`;ch.appendChild(s)});
-document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{location.hash=b.dataset.go});
-</script>
+<section class="view" id="practice"></section>
+<section class="view" id="settings"></section>
+<section class="view" id="drills"></section>
+<section class="view" id="stats"></section>
+<div class="sheet" id="sheet"><div class="in" id="sheetIn"></div></div>
+<script type="module" src="js/app.mjs"></script>
 </body>
 </html>

@@ -1,0 +1,1 @@
+{"name":"bj-trainer","private":true,"type":"module","scripts":{"test":"node test/charts.test.mjs && node test/engine.test.mjs && node test/game.test.mjs"}}

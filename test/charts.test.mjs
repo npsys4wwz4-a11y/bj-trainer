@@ -80,3 +80,28 @@ for (const [name,chart] of [['BASIC',BASIC],['S17_DEV',S17_DEV]]) {
 }
 assert.strictEqual(BASIC.insurance,"DON'T TAKE"); assert.strictEqual(S17_DEV.insurance,'3+');
 console.log('OK cells checked:',n);
+// ---- H17 chart: every cell
+import {H17_DEV,DEV_MAP} from '../data/charts.mjs';
+const H17EXP = EXP.S17_DEV
+ .replace('soft A,8|S S 3+ 1+ 1+ S S S S S','soft A,8|S S 3+ 1+ 0- S S S S S')
+ .replace('hard 16|S S S S S H H 4+ 0+ H','hard 16|S S S S S H H 4+ 0+ 3+')
+ .replace('hard 15|S S S S S H H H 4+ H','hard 15|S S S S S H H H 4+ 5+')
+ .replace('hard 11|D D D D D D D D D 1+','hard 11|D D D D D D D D D D')
+ .replace('hard 10|D D D D D D D D 4+ 4+','hard 10|D D D D D D D D 4+ 3+')
+ .replace('surrender 17|_ _ _ _ _ _ _ _ _ _','surrender 17|_ _ _ _ _ _ _ _ _ SUR')
+ .replace('surrender 15|_ _ _ _ _ _ _ 2+ 0- 2+','surrender 15|_ _ _ _ _ _ _ 2+ 0- -1+');
+assert.notStrictEqual(H17EXP, EXP.S17_DEV);
+let m=0;
+for (const l of H17EXP.split('\n')) { const [key,cells]=l.split('|'); const [sec,h]=key.split(' ');
+  const exp=cells.split(' ').map(c=>c==='_'?'':c); assert.strictEqual(H17_DEV[sec][h].length,10);
+  exp.forEach((e,i)=>{assert.strictEqual(H17_DEV[sec][h][i],e,`H17 ${key} vs ${UPCARDS[i]}`);m++;}); }
+assert.strictEqual(Object.values(H17_DEV).filter(v=>typeof v==='object').reduce((a,t)=>a+Object.keys(t).length,0), H17EXP.split('\n').length);
+assert.strictEqual(H17_DEV.insurance,'3+');
+// every index cell has exactly one mapping entry and vice versa
+for (const [nm,ch] of [['S17',S17_DEV],['H17',H17_DEV]]) {
+  const idx=[]; for (const sec of ['pairs','soft','hard','surrender']) for (const [row,cells] of Object.entries(ch[sec])) cells.forEach((c,i)=>{ if(/^-?\d+[+-]$/.test(c)) idx.push(`${sec} ${row} ${UPCARDS[i]}`); });
+  assert.deepStrictEqual(idx.sort(), Object.keys(DEV_MAP[nm]).sort(), nm+' map coverage');
+  // base action of each mapped hard/soft/pair cell must equal a letter allowed in that section
+  for (const [k,[b,d]] of Object.entries(DEV_MAP[nm])) assert.notStrictEqual(b,d,k);
+}
+console.log('OK H17 cells checked:',m);
